@@ -10,18 +10,20 @@ import model.Snake;
 
 public class TomiMoveStrategy implements SnakeStrategy {
 
+    private ArenaProxy arenaProxy;
+    private Snake snake;
+
     @Override
     public Direction nextMove(Snake snake, Arena arena) {
-        List<CoordinateWithDirection> freeCoordinates = getFreeCoordinates(snake, arena);
-        return getBestDirection(freeCoordinates, snake, arena);
+        initFieldsIfNecessary(snake, arena);
+        return getBestDirection(getFreeCoordinates());
     }
 
-    private Direction getBestDirection(List<CoordinateWithDirection> freeCoordinates, Snake snake, Arena arena) {
-        Direction bestDirection = (freeCoordinates.isEmpty()) ? Direction.WEST : freeCoordinates.get(0).getDirection();
-        Coordinate foodCoordinate = arena.getFood().get(0).getCoordinate();
-        int minDistance = arena.getMaxCoordinate().getX();
+    private Direction getBestDirection(List<CoordinateWithDirection> freeCoordinates) {
+        Direction bestDirection = initBestDirection(freeCoordinates);
+        int minDistance = arenaProxy.getMaxSize();
         for (CoordinateWithDirection coordinateWithDirection : freeCoordinates) {
-            int actucalDistance = foodCoordinate.minDistance(coordinateWithDirection.getCoordinate(), arena.getMaxCoordinate());
+            int actucalDistance = calculateActualDistance(coordinateWithDirection);
             if (actucalDistance < minDistance) {
                 bestDirection = coordinateWithDirection.getDirection();
                 minDistance = actucalDistance;
@@ -30,19 +32,64 @@ public class TomiMoveStrategy implements SnakeStrategy {
         return bestDirection;
     }
 
-    private List<CoordinateWithDirection> getFreeCoordinates(Snake snake, Arena arena) {
+    private List<CoordinateWithDirection> getFreeCoordinates() {
         List<CoordinateWithDirection> freeCoordinates = new ArrayList<>();
-        Coordinate currentHeadPosition = snake.getHeadCoordinate();
         for (Direction direction : Direction.values()) {
-            Coordinate nextCoordinate = currentHeadPosition.nextCoordinate(direction).truncLimits(arena.getMaxCoordinate());
-            if (!arena.isOccupied(nextCoordinate)) {
+            Coordinate nextCoordinate = calculateCoordinate(snake.getHeadCoordinate(), direction);
+            if (!arenaProxy.isOccupied(nextCoordinate)) {
                 freeCoordinates.add(new CoordinateWithDirection(nextCoordinate, direction));
             }
         }
         return freeCoordinates;
     }
 
+    private int calculateActualDistance(CoordinateWithDirection coordinateWithDirection) {
+        return arenaProxy.getFoodCoordinate().minDistance(coordinateWithDirection.getCoordinate(), arenaProxy.getMaxCoordinate());
+    }
+
+    private Direction initBestDirection(List<CoordinateWithDirection> freeCoordinates) {
+        return (freeCoordinates.isEmpty()) ? Direction.WEST : freeCoordinates.get(0).getDirection();
+    }
+
+    private Coordinate calculateCoordinate(Coordinate currentHeadPosition, Direction direction) {
+        return currentHeadPosition.nextCoordinate(direction).truncLimits(arenaProxy.getMaxCoordinate());
+    }
+
+    private void initFieldsIfNecessary(Snake snake, Arena arena) {
+        if (this.snake == null || this.arenaProxy == null) {
+            this.snake = snake;
+            this.arenaProxy = new ArenaProxy(arena);
+        }
+    }
+
+    private class ArenaProxy {
+
+        private Arena arena;
+
+        ArenaProxy(Arena arena) {
+            this.arena = arena;
+        }
+
+        public Coordinate getFoodCoordinate() {
+            return arena.getFood().get(0).getCoordinate();
+        }
+
+        public int getMaxSize() {
+            return arena.getMaxCoordinate().getX();
+        }
+
+        public Coordinate getMaxCoordinate() {
+            return arena.getMaxCoordinate();
+        }
+
+        public boolean isOccupied(Coordinate coordinate) {
+            return arena.isOccupied(coordinate);
+        }
+
+    }
+
     private class CoordinateWithDirection {
+
         private Coordinate coordinate;
         private Direction direction;
 

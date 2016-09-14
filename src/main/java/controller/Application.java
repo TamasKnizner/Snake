@@ -2,7 +2,6 @@ package controller;
 
 import model.ModifiableArena;
 import model.ModifiableSnake;
-import model.strategy.DefaultMoveStrategy;
 import model.strategy.TomiMoveStrategy;
 
 public final class Application {
@@ -15,9 +14,9 @@ public final class Application {
 
         ModifiableArena arena = new ModifiableArena();
         ModifiableSnake snake1 = new ModifiableSnake(arena, new TomiMoveStrategy(), "Tomi");
-        ModifiableSnake snake2 = new ModifiableSnake(arena, new DefaultMoveStrategy(), "Default");
+        //ModifiableSnake snake2 = new ModifiableSnake(arena, new DefaultMoveStrategy(), "Default");
         arena.addSnake(snake1);
-        arena.addSnake(snake2);
+        //arena.addSnake(snake2);
         new SnakeController(arena).start();
     }
 
