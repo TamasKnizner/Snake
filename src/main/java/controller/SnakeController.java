@@ -12,7 +12,7 @@ import view.ArenaView;
 public class SnakeController {
 
     private static final String TITLE = "Snake";
-    private static final int DELAY_BETWEEN_STEPS = 10;
+    private static final int DELAY_BETWEEN_STEPS = 0;
     private static final Dimension FRAME_SIZE = new Dimension(550, 570);
 
     private JFrame frame = new JFrame(TITLE);

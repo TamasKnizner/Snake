@@ -35,7 +35,7 @@ public class TomiMoveStrategy implements SnakeStrategy {
     private List<CoordinateWithDirection> getFreeCoordinates() {
         List<CoordinateWithDirection> freeCoordinates = new ArrayList<>();
         for (Direction direction : Direction.values()) {
-            Coordinate nextCoordinate = calculateCoordinate(snake.getHeadCoordinate(), direction);
+            Coordinate nextCoordinate = calculateCoordinate(direction);
             if (!arenaProxy.isOccupied(nextCoordinate)) {
                 freeCoordinates.add(new CoordinateWithDirection(nextCoordinate, direction));
             }
@@ -44,15 +44,15 @@ public class TomiMoveStrategy implements SnakeStrategy {
     }
 
     private int calculateActualDistance(CoordinateWithDirection coordinateWithDirection) {
-        return arenaProxy.getFoodCoordinate().minDistance(coordinateWithDirection.getCoordinate(), arenaProxy.getMaxCoordinate());
+        return arenaProxy.distanceFromFood(coordinateWithDirection.getCoordinate());
     }
 
     private Direction initBestDirection(List<CoordinateWithDirection> freeCoordinates) {
         return (freeCoordinates.isEmpty()) ? Direction.WEST : freeCoordinates.get(0).getDirection();
     }
 
-    private Coordinate calculateCoordinate(Coordinate currentHeadPosition, Direction direction) {
-        return currentHeadPosition.nextCoordinate(direction).truncLimits(arenaProxy.getMaxCoordinate());
+    private Coordinate calculateCoordinate(Direction direction) {
+        return snake.getHeadCoordinate().nextCoordinate(direction).truncLimits(arenaProxy.getMaxCoordinate());
     }
 
     private void initFieldsIfNecessary(Snake snake, Arena arena) {
@@ -70,7 +70,7 @@ public class TomiMoveStrategy implements SnakeStrategy {
             this.arena = arena;
         }
 
-        public Coordinate getFoodCoordinate() {
+        private Coordinate getFoodCoordinate() {
             return arena.getFood().get(0).getCoordinate();
         }
 
@@ -84,6 +84,10 @@ public class TomiMoveStrategy implements SnakeStrategy {
 
         public boolean isOccupied(Coordinate coordinate) {
             return arena.isOccupied(coordinate);
+        }
+
+        public int distanceFromFood(Coordinate coordinate) {
+            return getFoodCoordinate().minDistance(coordinate, getMaxCoordinate());
         }
 
     }
